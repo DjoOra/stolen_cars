@@ -15,7 +15,7 @@ class UpdateCarData extends Command
 
     public function handle()
     {
-        /*
+
         $makesResponse = Http::get('https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json');
 
         if ($makesResponse->ok()) {
@@ -32,39 +32,34 @@ class UpdateCarData extends Command
                 }
             }
         }
-        */
+
         $makes = Make::all();
 
-        $i = 1;
         foreach ($makes as $make) {
-            if ($i > 1130) {
-                $url = "https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformakeid/{$make->Make_ID}?format=json";
 
-                try {
-                    $modelsResponse = Http::get($url);
-                } catch (\Throwable $th) {
-                    //log
-                    continue;
-                }
-                
-                if ($modelsResponse->ok()) {
-                    $modelsData = $modelsResponse->json();
+            $url = "https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformakeid/{$make->Make_ID}?format=json";
 
-                    if (isset($modelsData['Results'])) {
-                        $models = $modelsData['Results'];
+            try {
+                $modelsResponse = Http::get($url);
+            } catch (\Throwable $th) {
+                //log
+                continue;
+            }
 
-                        foreach ($models as $model) {
-                            CarModel::updateOrCreate(
-                                ['Model_ID' => $model['Model_ID']],
-                                ['Make_ID' => $model['Make_ID'], 'Model_Name' => $model['Model_Name']],
-                            );
-                        }
+            if ($modelsResponse->ok()) {
+                $modelsData = $modelsResponse->json();
+
+                if (isset($modelsData['Results'])) {
+                    $models = $modelsData['Results'];
+
+                    foreach ($models as $model) {
+                        CarModel::updateOrCreate(
+                            ['Model_ID' => $model['Model_ID']],
+                            ['Make_ID' => $model['Make_ID'], 'Model_Name' => $model['Model_Name']],
+                        );
                     }
                 }
             }
-
-            echo ($i . ' from ' . $make->count() . '/n');
-            $i++;
         }
 
 
